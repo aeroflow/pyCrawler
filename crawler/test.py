@@ -1,38 +1,22 @@
-import httplib2
 import re
-from html.parser import HTMLParser
 
-rootURL = 'http://www.dianping.com/search/category/2/0/p1'
 
-urlPattern = re.compile(r'<a href="/shop/\d+"(.*)&nbsp;&nbsp;\d{8}</li>')
+def extractData(regex, content):
+    r = '0'
+    p = re.compile(regex)
+    m = p.search(content)
+    if m:
+        r = m.group(1)
+        return r;
 
-def getRestaurant(pattern,url):
-    print(url)
-#    print(filename)
-    try:
-        response, content = httplib2.Http().request(url)
-    except:
-        print('download exception:' + response)
-        return 0
-#    f = open(filename, 'w')
-    
-    results = pattern.findall(content)
-    print(results)
-'''    
-Parse the Html and get the information about restaurant
 
-   
-
-    
-def getURL(url):
-    try:
-        response, content = httplib2.Http().request(url)
-    except:
-        print('download exception:' + response)
-        return 0
-    urlPattern = ''  
-    
-''' 
 if __name__ == '__main__':
-    getRestaurant(urlPattern,rootURL)       
+    regex = r'?aid=(\d+)&logid=\d*&p=com.boyaa.lordland.sina'
+    content = "http:\/\/cn.papayamobile.com\/a\/games\/json_cg_c2ba_d?aid=65&logid=5140301&p=com.boyaa.lordland.sina"
+
+ 
+   
+    print(extractData(regex,content))
+#    print(extractData(regex,content))
+#    print(extractData(regex,content,index+2))
     
