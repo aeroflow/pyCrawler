@@ -19,8 +19,7 @@ def extractInfo(pattern,url):
     result = pattern.findall(str_content)   
 #    print(results)
     if result:
-        for ret in result:
-            return ret
+       return result[0]
         
 
 if __name__ == '__main__':

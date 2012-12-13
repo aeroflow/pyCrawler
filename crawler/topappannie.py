@@ -3,7 +3,7 @@ import httplib2
 import re
 from html.parser import HTMLParser
 
-def extractCountries(pattern,url):
+def extractCountries(url,pattern1,pattern2):
     charp = re.compile(r'charset=(.*?)$')
     try:
         resp, cont = httplib2.Http().request(url)
@@ -14,15 +14,17 @@ def extractCountries(pattern,url):
     if charm:
         decoder = charm.group(1)
     str_cont = cont.decode(decoder)
-    result= pattern.findall(str_cont)    
-    return result
+    box= pattern1.search(str_cont)    
+    if box :
+        result = box.group(1)
+#        print(result)
+        cbox = pattern2.findall(result)
+        return cbox       
         
-        
 
 
 
-def extractInfo(pattern,url):
-    print(url)
+def extractInfo(url,pattern):
     charp = re.compile(r'charset=(.*?)$')
     try:
         response, content = httplib2.Http().request(url)
@@ -35,27 +37,77 @@ def extractInfo(pattern,url):
     str_content = content.decode(decoder)
 #    print(str_content)  
     result = pattern.findall(str_content)   
-#    print(results)
+ 
     if result:
-        for ret in result:
-            return ret
+        for i in range(len(result)):
+            result[i]=HTMLParser().unescape(result[i])
+        return result    
+        
         
 
 if __name__ == '__main__':
     
-    url = 'http://www.appannie.com/app/android/'
-    ratingp = re.compile(r'itemprop="ratingValue" content="(\d\.\d)"')
+    rurl = 'http://www.appannie.com/top/android/united-states/overall/'
     
-    f= open('games.txt','r')
-    fw = open('gamerating.txt','a')
-    lines = f.readlines()
-    for l in lines:
-        game = l.strip()   
-        rating = extractInfo(ratingp,url+game)
-        fw.writelines(game + '\t' + str(rating) + '\n')
-        print(game + '\t' + str(rating))
-    f.close()
-    fw.close()
+    prefix = 'http://www.appannie.com/top/android/'
+    
+    boxp = re.compile(r'<div id="all-stores" class="select_box">\s*?<ul>([\s\S]*?)</ul>\s*?</div>')
+    countryp = re.compile(r'<li><a href="/top/android/(.*?)/overall.*?>.*?</a></li>')
+    top_paid_p = re.compile(r'<td class="top_paid app paid no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
+    top_free_p = re.compile(r'<td class="top_free app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
+    top_gross_p = re.compile(r'<td class="top_free app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
+    top_new_paid_p = re.compile(r'<td class="top_new_paid app paid no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
+    top_new_free_p = re.compile(r'<td class="top_new_free app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
+    
+    print('Extracting Countries.......') 
+    countries = extractCountries(rurl,boxp,countryp)    
+ 
+
+    for c in countries:
+        url = prefix + c + '/overall'
+        print('Index of Countries:\t%d/%d' %(countries.index(c)+1,len(countries)))
+        print(url)
+        print('Extracting Top Paid.....')
+        top_paid=extractInfo(url,top_paid_p)
+        print('Extracting Top Free.....')
+        top_free=extractInfo(url,top_free_p)
+        print('Extracting Top Gross.....')
+        top_gross=extractInfo(url,top_gross_p)
+        print('Extracting Top New Paid.....')
+        top_new_paid=extractInfo(url,top_new_paid_p)
+        print('Extracting Top New Free.....')
+        top_new_free=extractInfo(url,top_new_free_p)
+        
+        fw= open('topapps.txt','ab')
+        
+        print('Writing Top Paid.....')
+        i=0
+        for t in top_paid:
+            i+=1
+            rec = str(i)+'\t'+t+'\t'+'Paid'+'\t'+c+'\n'
+            fw.write(rec.encode(encoding='utf_8', errors='strict'))
+        print('Writing Top Free.....')
+        i=0
+        for t in top_free:
+            i+=1
+            fw.write(str(str(i)+'\t'+t+'\t'+'Free'+'\t'+c+'\n').encode(encoding='utf_8', errors='strict'))
+        print('Writing Top Gross.....')
+        i=0
+        for t in top_gross:
+            i+=1
+            fw.write(str(str(i)+'\t'+t+'\t'+'Gross'+'\t'+c+'\n').encode(encoding='utf_8', errors='strict'))
+        print('Writing Top New Paid.....')
+        i=0
+        for t in top_new_paid:
+            i+=1
+            fw.write(str(str(i)+'\t'+t+'\t'+'NewPaid'+'\t'+c+'\n').encode(encoding='utf_8', errors='strict'))
+        print('Writing Top .....')
+        i=0
+        for t in top_new_free:
+            i+=1
+            fw.write(str(str(i)+'\t'+t+'\t'+'NewFree'+'\t'+c+'\n').encode(encoding='utf_8', errors='strict'))          
+        fw.close()
+        
     print("********************** END **************************")
         
     
