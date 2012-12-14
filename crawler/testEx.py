@@ -75,7 +75,7 @@ if __name__ == '__main__':
     countries = extractCountries(rurl,boxp,countryp)    
  
 
-    for c in countries:
+    for c in ['china']:
         url = prefix + c + '/overall'
         
         print('Index of Countries:\t%d/%d' %(countries.index(c)+1,len(countries)))
