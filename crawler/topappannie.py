@@ -1,6 +1,7 @@
 #encoding='utf-8'
 import httplib2
 import re
+import datetime
 from html.parser import HTMLParser
 
 def extractCountries(url,pattern1,pattern2):
@@ -45,12 +46,13 @@ def extractInfo(url,pattern):
 
 def toText(file,rec,country,tag):
     fw=open(file,'ab')
+    dt = datetime.datetime.now().strftime('%Y-%m-%d')  
     print('Writing Top %s.....' %tag)
     try:
         i=0
         for t in rec:
             i+=1
-            l = str(i)+'\t'+t+'\t'+tag+'\t'+country+'\n'
+            l = str(i)+'\t'+t+'\t'+tag+'\t'+country+dt+'\n'
             fw.write(l.encode(encoding='utf_8', errors='strict'))
     except (TypeError) as e:
         print(e)
@@ -67,13 +69,13 @@ if __name__ == '__main__':
     countryp = re.compile(r'<li><a href="/top/android/(.*?)/overall.*?>.*?</a></li>')
     top_paid_p = re.compile(r'<td class="top_paid app paid no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
     top_free_p = re.compile(r'<td class="top_free app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
-    top_gross_p = re.compile(r'<td class="top_free app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
+    top_gross_p = re.compile(r'<td class="top_gros app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
     top_new_paid_p = re.compile(r'<td class="top_new_paid app paid no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
     top_new_free_p = re.compile(r'<td class="top_new_free app free no_iap feed_5">[\s\S]*?class="app-name"><a.*?>(.*?)</a></span>')
     
     print('Extracting Countries.......') 
-    countries = extractCountries(rurl,boxp,countryp)    
- 
+    countries = extractCountries(rurl,boxp,countryp)
+    
 
     for c in countries:
         url = prefix + c + '/overall'
